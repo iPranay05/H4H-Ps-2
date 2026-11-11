@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { User, LogOut } from "lucide-react"
+import { User, LogOut, Bot } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 
@@ -16,6 +16,8 @@ export default function DashboardNav() {
     { name: "Crypto", href: "/dashboard/crypto" },
     { name: "Insurance", href: "/dashboard/insurance" },
     { name: "Predictor", href: "/dashboard/predictor" },
+    { name: "Auto Trader", href: "/dashboard#auto-trader" },
+    { name: "Journal", href: "/dashboard#journal" },
   ]
 
   const handleLogout = () => {

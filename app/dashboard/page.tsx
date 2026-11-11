@@ -15,6 +15,12 @@ import { BestPerformer } from "@/components/best-performer";
 import AddTestTransactionButton from "@/components/add-test-transaction-button";
 import { calculateTotalPortfolioValue, calculateMonthlyChange, initializePortfolioTracker } from "@/lib/portfolio-tracker";
 import { initializeWeb3Integration, calculateWeb3PortfolioValue } from "@/lib/web3-integration";
+import AIInvestmentAdvisorMain from "@/components/ai-investment-advisor-main";
+import AIPortfolioOptimizer from "@/components/ai-portfolio-optimizer";
+import TradingAgentPanel from "@/components/trading-agent-panel";
+import TradeJournal from "@/components/trade-journal";
+import { Sparkles, Brain, TrendingUp, BarChart3, PieChart, Bot, BookOpen } from "lucide-react";
+import Link from "next/link";
 
 export default function DashboardPage() {
   const [totalValue, setTotalValue] = useState(0);
@@ -26,6 +32,25 @@ export default function DashboardPage() {
     stocks: 0,
     crypto: 0
   });
+  const [currentTab, setCurrentTab] = useState("overview");
+
+  useEffect(() => {
+    // Check initial hash
+    if (typeof window !== "undefined") {
+      const hash = window.location.hash.replace("#", "");
+      if (["overview", "web3", "analytics", "ai-advisor", "auto-trader", "journal"].includes(hash)) {
+        setCurrentTab(hash);
+      }
+      const handleHashChange = () => {
+        const h = window.location.hash.replace("#", "");
+        if (["overview", "web3", "analytics", "ai-advisor", "auto-trader", "journal"].includes(h)) {
+          setCurrentTab(h);
+        }
+      };
+      window.addEventListener("hashchange", handleHashChange);
+      return () => window.removeEventListener("hashchange", handleHashChange);
+    }
+  }, []);
 
   useEffect(() => {
     // Initialize portfolio tracker
@@ -66,7 +91,7 @@ export default function DashboardPage() {
         <WalletConnection />
       </div>
       
-      <Tabs defaultValue="overview" className="space-y-4">
+      <Tabs value={currentTab} onValueChange={setCurrentTab} className="space-y-4">
         <TabsList className="bg-gray-50 p-1">
           <TabsTrigger 
             value="overview"
@@ -85,6 +110,27 @@ export default function DashboardPage() {
             className="data-[state=active]:bg-accent data-[state=active]:text-white"
           >
             Analytics
+          </TabsTrigger>
+          <TabsTrigger 
+            value="ai-advisor"
+            className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
+          >
+            <Sparkles className="h-4 w-4 mr-1" />
+            AI Advisor
+          </TabsTrigger>
+          <TabsTrigger
+            value="auto-trader"
+            className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white"
+          >
+            <Bot className="h-4 w-4 mr-1" />
+            Auto Trader
+          </TabsTrigger>
+          <TabsTrigger
+            value="journal"
+            className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
+          >
+            <BookOpen className="h-4 w-4 mr-1" />
+            Journal
           </TabsTrigger>
         </TabsList>
         
@@ -254,6 +300,103 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           </div>
+
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+            <Card className="col-span-1 border border-purple-100 hover:border-purple-300 transition-colors">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Sparkles className="h-5 w-5 mr-2 text-purple-500" />
+                  AI Investment Advisor
+                </CardTitle>
+                <CardDescription>
+                  Get personalized investment recommendations powered by advanced AI
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="p-4 bg-purple-50 rounded-md border border-purple-100">
+                    <h3 className="text-lg font-medium text-purple-800 mb-2">Smart Investment Recommendations</h3>
+                    <p className="text-sm text-purple-700 mb-4">
+                      Our AI analyzes market sentiment, risk profiles, and portfolio optimization to provide personalized investment advice.
+                    </p>
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                      <div className="flex items-center p-2 bg-white rounded-md border border-purple-100">
+                        <div className="bg-purple-100 p-2 rounded-full mr-3">
+                          <Brain className="h-4 w-4 text-purple-600" />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium">Risk Analysis</h4>
+                          <p className="text-xs text-gray-500">Tailored to your profile</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center p-2 bg-white rounded-md border border-purple-100">
+                        <div className="bg-purple-100 p-2 rounded-full mr-3">
+                          <TrendingUp className="h-4 w-4 text-purple-600" />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium">Market Sentiment</h4>
+                          <p className="text-xs text-gray-500">Real-time analysis</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-center">
+                    <Link 
+                      href="/dashboard/ai-advisor" 
+                      className="inline-flex items-center justify-center rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                    >
+                      Try AI Advisor
+                    </Link>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="col-span-1 border border-blue-100 hover:border-blue-300 transition-colors">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <BarChart3 className="h-5 w-5 mr-2 text-blue-500" />
+                  Gemini Market Predictor
+                </CardTitle>
+                <CardDescription>
+                  AI-powered bull or bear market predictions using Google's Gemini
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="p-4 bg-blue-50 rounded-md border border-blue-100">
+                    <h3 className="text-lg font-medium text-blue-800 mb-2">Market Trend Analysis</h3>
+                    <p className="text-sm text-blue-700 mb-4">
+                      Harness the power of Google's Gemini AI to predict whether markets will be bullish or bearish.
+                    </p>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center">
+                        <div className="bg-green-100 p-1 rounded-full">
+                          <TrendingUp className="h-4 w-4 text-green-600" />
+                        </div>
+                        <span className="text-sm font-medium ml-2">Bullish</span>
+                      </div>
+                      <span className="text-xs text-gray-500">or</span>
+                      <div className="flex items-center">
+                        <div className="bg-red-100 p-1 rounded-full">
+                          <TrendingUp className="h-4 w-4 text-red-600 transform rotate-180" />
+                        </div>
+                        <span className="text-sm font-medium ml-2">Bearish</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-center">
+                    <Link 
+                      href="/dashboard/market-predictor" 
+                      className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    >
+                      Try Market Predictor
+                    </Link>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
         
         <TabsContent value="web3" className="space-y-4">
@@ -319,6 +462,118 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+        
+        <TabsContent value="ai-advisor" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1">
+            <Card className="col-span-1">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Sparkles className="h-5 w-5 mr-2 text-purple-500" />
+                  AI Investment Advisor
+                </CardTitle>
+                <CardDescription>
+                  Get personalized investment recommendations powered by advanced AI
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="p-4 bg-purple-50 rounded-md border border-purple-100">
+                    <h3 className="text-lg font-medium text-purple-800 mb-2">Smart Investment Recommendations</h3>
+                    <p className="text-sm text-purple-700 mb-4">
+                      Our AI analyzes market sentiment, risk profiles, and portfolio optimization to provide personalized investment advice.
+                    </p>
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                      <div className="flex items-center p-2 bg-white rounded-md border border-purple-100">
+                        <div className="bg-purple-100 p-2 rounded-full mr-3">
+                          <Brain className="h-4 w-4 text-purple-600" />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium">Risk Analysis</h4>
+                          <p className="text-xs text-gray-500">Tailored to your profile</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center p-2 bg-white rounded-md border border-purple-100">
+                        <div className="bg-purple-100 p-2 rounded-full mr-3">
+                          <TrendingUp className="h-4 w-4 text-purple-600" />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium">Market Sentiment</h4>
+                          <p className="text-xs text-gray-500">Real-time analysis</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-center">
+                    <Link 
+                      href="/dashboard/ai-advisor" 
+                      className="inline-flex items-center justify-center rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                    >
+                      Try AI Advisor
+                    </Link>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="col-span-1 border border-blue-100 hover:border-blue-300 transition-colors">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <PieChart className="h-5 w-5 mr-2 text-blue-500" />
+                  AI Portfolio Optimizer
+                </CardTitle>
+                <CardDescription>
+                  Optimize your portfolio allocation based on your risk profile
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="p-4 bg-blue-50 rounded-md border border-blue-100">
+                    <h3 className="text-lg font-medium text-blue-800 mb-2">Smart Portfolio Optimization</h3>
+                    <p className="text-sm text-blue-700 mb-4">
+                      Our AI analyzes your portfolio and suggests optimal allocations to maximize returns while managing risk.
+                    </p>
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                      <div className="flex items-center p-2 bg-white rounded-md border border-blue-100">
+                        <div className="bg-blue-100 p-2 rounded-full mr-3">
+                          <PieChart className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium">Diversification</h4>
+                          <p className="text-xs text-gray-500">Balanced allocation</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center p-2 bg-white rounded-md border border-blue-100">
+                        <div className="bg-blue-100 p-2 rounded-full mr-3">
+                          <TrendingUp className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium">Risk-Adjusted Returns</h4>
+                          <p className="text-xs text-gray-500">Optimize performance</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-center">
+                    <Link 
+                      href="/dashboard/portfolio-optimizer" 
+                      className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    >
+                      Try Portfolio Optimizer
+                    </Link>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="auto-trader" className="space-y-4">
+          <TradingAgentPanel />
+        </TabsContent>
+
+        <TabsContent value="journal" className="space-y-4">
+          <TradeJournal onNavigateToConfig={() => setCurrentTab("auto-trader")} />
         </TabsContent>
       </Tabs>
     </div>

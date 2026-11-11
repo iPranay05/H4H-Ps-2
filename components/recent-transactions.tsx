@@ -95,7 +95,14 @@ export default function RecentTransactions() {
                     </div>
                   </Avatar>
                   <div>
-                    <div className="font-medium">{transaction.assetName}</div>
+                    <div className="font-medium flex items-center gap-1.5">
+                      {transaction.assetName}
+                      {transaction.id.startsWith("agent-") && (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-purple-100 text-purple-700 font-semibold">
+                          AI Agent
+                        </span>
+                      )}
+                    </div>
                     <div className="text-xs text-gray-500">{transaction.assetType.charAt(0).toUpperCase() + transaction.assetType.slice(1)}</div>
                   </div>
                 </div>

@@ -31,66 +31,69 @@ export async function fetchRealTimeCryptoData() {
   }
 }
 
-// Function to fetch real-time stock data from Alpha Vantage
+// Indian stock symbols on NSE — mapped to Yahoo Finance suffix (.NS)
+const INDIAN_STOCKS = [
+  { ticker: 'RELIANCE',   yahooSymbol: 'RELIANCE.NS'   },
+  { ticker: 'HDFCBANK',   yahooSymbol: 'HDFCBANK.NS'   },
+  { ticker: 'INFY',       yahooSymbol: 'INFY.NS'        },
+  { ticker: 'TCS',        yahooSymbol: 'TCS.NS'         },
+  { ticker: 'ICICIBANK',  yahooSymbol: 'ICICIBANK.NS'   },
+  { ticker: 'HINDUNILVR', yahooSymbol: 'HINDUNILVR.NS'  },
+  { ticker: 'BHARTIARTL', yahooSymbol: 'BHARTIARTL.NS'  },
+  { ticker: 'ITC',        yahooSymbol: 'ITC.NS'         },
+  { ticker: 'WIPRO',      yahooSymbol: 'WIPRO.NS'       },
+  { ticker: 'BAJFINANCE', yahooSymbol: 'BAJFINANCE.NS'  },
+  { ticker: 'TATAMOTORS', yahooSymbol: 'TATAMOTORS.NS'  },
+];
+
+// Fetch real-time Indian stock data from Yahoo Finance (no API key required)
 export async function fetchRealTimeStockData() {
   try {
-    // Note: You'll need to sign up for a free API key at https://www.alphavantage.co/
-    // This is using a sample API key - replace with your own
-    const API_KEY = 'demo';
-    const symbols = ['RELIANCE.BSE', 'HDFCBANK.BSE', 'INFY.BSE', 'TCS.BSE', 'ICICIBANK.BSE'];
-    
-    // We'll fetch data for each symbol
-    const stockPromises = symbols.map(async (symbol) => {
-      try {
-        const response = await fetch(
-          `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${API_KEY}`
-        );
-        
-        if (!response.ok) {
-          throw new Error(`Failed to fetch data for ${symbol}`);
-        }
-        
-        const data = await response.json();
-        
-        // Check if we have valid data
-        if (data['Global Quote'] && data['Global Quote']['05. price']) {
-          const quote = data['Global Quote'];
-          const price = parseFloat(quote['05. price']);
-          const change = parseFloat(quote['09. change']);
-          const changePercent = parseFloat(quote['10. change percent'].replace('%', ''));
-          
-          // Find the corresponding stock in our mock data to get the name
-          const stockInfo = stocksData.find(stock => stock.ticker === symbol.split('.')[0]);
-          
-          return {
-            id: symbol,
-            name: stockInfo?.name || symbol,
-            ticker: symbol.split('.')[0],
-            price: price,
-            change: changePercent,
-            marketCap: "N/A", // Alpha Vantage doesn't provide this in the basic quote
-            volume: quote['06. volume'] ? formatMarketCap(parseInt(quote['06. volume'])) : "N/A",
-          };
-        }
-        
-        // If we don't have valid data, return null
-        return null;
-      } catch (error) {
-        console.error(`Error fetching data for ${symbol}:`, error);
-        // Find the corresponding stock in our mock data
-        const stockInfo = stocksData.find(stock => stock.ticker === symbol.split('.')[0]);
-        return stockInfo ? { ...stockInfo } : null;
-      }
+    const symbols = INDIAN_STOCKS.map(s => s.yahooSymbol).join(',');
+    const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols}&fields=regularMarketPrice,regularMarketChangePercent,marketCap,regularMarketVolume,longName,shortName`;
+
+    const response = await fetch(url, {
+      headers: {
+        // Yahoo Finance requires a browser-like User-Agent
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      },
     });
-    
-    const stocksResult = await Promise.all(stockPromises);
-    const filteredStocks = stocksResult.filter(stock => stock !== null);
-    
-    // If we couldn't get any real-time data, return the mock data
-    return filteredStocks.length > 0 ? filteredStocks : stocksData;
+
+    if (!response.ok) {
+      throw new Error(`Yahoo Finance returned ${response.status}`);
+    }
+
+    const data = await response.json();
+    const quotes = data?.quoteResponse?.result;
+
+    if (!Array.isArray(quotes) || quotes.length === 0) {
+      throw new Error('No quotes returned from Yahoo Finance');
+    }
+
+    const results = quotes.map((q: any) => {
+      // Map Yahoo symbol back to our ticker (strip .NS)
+      const ticker = q.symbol?.replace('.NS', '').replace('.BSE', '') ?? q.symbol;
+      const staticInfo = stocksData.find(s => s.ticker === ticker);
+
+      return {
+        id: ticker,
+        name: q.longName || q.shortName || staticInfo?.name || ticker,
+        ticker,
+        price: q.regularMarketPrice ?? staticInfo?.price ?? 0,
+        change: q.regularMarketChangePercent ?? staticInfo?.change ?? 0,
+        marketCap: q.marketCap ? formatMarketCap(q.marketCap) : (staticInfo?.marketCap ?? 'N/A'),
+        volume: q.regularMarketVolume ? formatMarketCap(q.regularMarketVolume) : (staticInfo?.volume ?? 'N/A'),
+      };
+    });
+
+    // Fill in any missing tickers with static fallback
+    const returnedTickers = new Set(results.map((r: any) => r.ticker));
+    const missing = stocksData.filter(s => !returnedTickers.has(s.ticker));
+    return [...results, ...missing];
+
   } catch (error) {
-    console.error('Error fetching stock data:', error);
-    // Return mock data as fallback
+    console.error('Error fetching Indian stock data from Yahoo Finance:', error);
+    // Return static data as fallback — prices are always available
     return stocksData;
   }
 }
